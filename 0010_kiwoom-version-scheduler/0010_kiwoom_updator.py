@@ -5,6 +5,10 @@ import win32api
 import time
 import sys
 
+path_work = "D:/myPython/kiwoom/0010_kiwoom-version-scheduler/"
+path_login_py = path_work + "0011_kiwoom_updator_login.py"
+path_account = path_work + "0012_kiwoom_updator_account.txt"
+
 def open_login_window(password, cert_password, secs=60):
     """
     OpenAPI+를 사용해서 로그인 윈도우를 실행한 후 로그인을 시도하는 함수
@@ -13,7 +17,7 @@ def open_login_window(password, cert_password, secs=60):
     :param secs: 로그인 완료까지 대기할 시간
     :return:
     """
-    cmd = "d:/Anaconda3/python.exe D:/myPython/kiwoom/kiwoom-version-master/0011_kiwoom_updator_login.py"
+    cmd = "d:/Anaconda3/python.exe " + path_login_py
     subprocess.Popen(cmd, shell=True)
     time.sleep(5)
 
@@ -182,7 +186,7 @@ def close_login_window():
 
 if __name__ == "__main__":
     # 비밀번호
-    f = open("D:/myPython/kiwoom/kiwoom-version-master/0012_kiwoom_updator_account.txt", 'r')
+    f = open(path_account, 'r')
     lines = f.readlines()
     for idx in range(len(lines)):
         # 비밀번호류는 별도로 저장해두어 관리가 용이하도록한다.
