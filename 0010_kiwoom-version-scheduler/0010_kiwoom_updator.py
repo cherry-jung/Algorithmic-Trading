@@ -4,10 +4,40 @@ import win32con
 import win32api
 import time
 import sys
+import logging
+import logging.handlers
 
-path_work = "D:/myPython/kiwoom/0010_kiwoom-version-scheduler/"
-path_login_py = path_work + "0011_kiwoom_updator_login.py"
-path_account = path_work + "0012_kiwoom_updator_account.txt"
+path_work           = "D:/myPython/kiwoom/0010_kiwoom-version-scheduler/"
+path_work_py_full   = sys._getframe().f_code.co_filename
+path_work_py = path_work_py_full.split("/")[len(path_work_py_full.split("/"))-1].split(".")[0]
+path_work_logfile   = path_work + path_work_py + '_log.log'
+path_login_py       = path_work + "0011_kiwoom_updator_login.py"
+path_account        = path_work + "0012_kiwoom_updator_account.txt"
+
+# logger 인스턴스를 생성 및 로그 레벨 설정
+logger = logging.getLogger(path_work_py)
+logger.setLevel(logging.DEBUG)
+
+# formmater 생성
+formatter = logging.Formatter(u'[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
+
+
+# file max size를 10MB로 설정
+file_max_bytes = 10 * 1024 * 1024
+
+fileHandler = logging.handlers.RotatingFileHandler(filename=path_work_logfile, encoding = "utf-8", maxBytes=file_max_bytes, backupCount=10)
+
+# fileHandler와 StreamHandler를 생성
+# fileHandler = logging.FileHandler(path_work + path_work_py + '_log.log')
+streamHandler = logging.StreamHandler()
+
+# handler에 fommater 세팅
+fileHandler.setFormatter(formatter)
+streamHandler.setFormatter(formatter)
+
+# Handler를 logging에 추가
+logger.addHandler(fileHandler)
+logger.addHandler(streamHandler)
 
 def open_login_window(password, cert_password, secs=60):
     """
@@ -23,10 +53,10 @@ def open_login_window(password, cert_password, secs=60):
 
     if(try_manual_login(password, cert_password)) :
         for i in range(secs):
-            print("로그인 완료 대기 중 : " + str(secs-i))
+            logger.info("로그인 완료 대기 중 : " + str(secs-i))
             time.sleep(1)
     else :
-        print('자동로그인 중')
+        logger.info('자동로그인 중')
 
 
 def window_enumeration_handler(hwnd, top_windows):
@@ -102,10 +132,10 @@ def get_window_list():
 
 
 def set_auto_off(cert_window_name):
-    print('called cert_window_name : ' + cert_window_name)
+    logger.info('called cert_window_name : ' + cert_window_name)
     try:
         hwnd = find_window(cert_window_name)
-        # print('win32gui.GetDlgCtrlID() : ' + win32gui.GetDlgCtrlID())
+        # logger.info('win32gui.GetDlgCtrlID() : ' + win32gui.GetDlgCtrlID())
         # 체크박스 해제
         checkbox = win32gui.GetDlgItem(hwnd, 0xCD)
         checked = win32gui.SendMessage(checkbox, win32con.BM_GETCHECK)
@@ -116,23 +146,23 @@ def set_auto_off(cert_window_name):
         button= win32gui.GetDlgItem(hwnd, 0x01)
         click_button(button)
     except:
-        print("auto 해제 실패")
+        logger.info("auto 해제 실패")
         sys.exit()
 
-    print("auto 해제 후 대기 중")
+    logger.info("auto 해제 후 대기 중")
     time.sleep(5)
 
 def try_manual_login(password, cert_password):
     # i = 1
     hwnd = find_window("Open API Login")
     # while hwnd == 0 and i != 21:
-    #     print("Wait more update(" + str(i) + "/20)")
+    #     logger.info("Wait more update(" + str(i) + "/20)")
     #     i = i + 1
     #     time.sleep(5)
     if hwnd == 0:
-        # print("please try next time update")
+        # logger.info("please try next time update")
         return False
-    print("manual login window hwnd value : " + hwnd)
+    logger.info("manual login window hwnd value : " + str(hwnd))
     edit_pass = win32gui.GetDlgItem(hwnd, 0x3E9)
     edit_cert = win32gui.GetDlgItem(hwnd, 0x3EA)
     button = win32gui.GetDlgItem(hwnd, 0x1)
@@ -181,7 +211,7 @@ def close_login_window():
         close_window(title)
         time.sleep(2)
     except:
-        print("error: close login window")
+        logger.info("error: close login window")
 
 
 if __name__ == "__main__":
@@ -191,16 +221,16 @@ if __name__ == "__main__":
     for idx in range(len(lines)):
         # 비밀번호류는 별도로 저장해두어 관리가 용이하도록한다.
         lines[idx] = lines[idx].split(':')[1].rstrip('\n')
-        # print(lines[idx])
+        # logger.info(lines[idx])
     f.close()
-    # print(lines)
+    # logger.info(lines)
     password = lines[1]
     password2 = lines[2]
     cert_password = ""
 
     # 로그인 -> Auto 해제 -> 창닫기
     open_login_window(password, cert_password)
-    print("\n".join("{: 9d} {}".format(h, t) for t, h in get_window_list()))
+    logger.info("\n".join("{: 9d} {}".format(h, t) for t, h in get_window_list()))
     cert_window_name = ""
     for t, h in get_window_list():
         # 버전에 따라 창 이름이 달라지므로 특정 이름이 들어간 창을 선택할수 있게 한다.
