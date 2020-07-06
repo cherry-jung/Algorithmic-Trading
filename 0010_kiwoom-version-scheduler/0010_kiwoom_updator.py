@@ -9,7 +9,7 @@ import logging.handlers
 
 path_work           = "D:/myPython/kiwoom/0010_kiwoom-version-scheduler/"
 path_work_py_full   = sys._getframe().f_code.co_filename
-path_work_py = path_work_py_full.split("/")[len(path_work_py_full.split("/"))-1].split(".")[0]
+path_work_py        = path_work_py_full.split("/")[len(path_work_py_full.split("/"))-1].split(".")[0]
 path_work_logfile   = path_work + path_work_py + '_log.log'
 path_login_py       = path_work + "0011_kiwoom_updator_login.py"
 path_account        = path_work + "0012_kiwoom_updator_account.txt"
